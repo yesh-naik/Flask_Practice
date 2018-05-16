@@ -39,7 +39,18 @@
         {% with messages = get_flashed_messages() %}
         {% if messages %}
             {% for message in messages %}
-            <div class="alert alert-info" role="alert">{{ message }}</div>
+                {% set list1 = message.split('-') %}
+                {% if list1|length > 1 %}
+                    {% if 'RED' in list1[0] %} 
+                        <div class="alert alert-danger alert-dismissible" role="alert">{{ list1[1]}}</div>
+                    {% endif %}
+                    {% if 'GREEN' in list1[0] %} 
+                        <div class="alert alert-success alert-dismissible" role="alert">{{ list1[1]}}</div>
+                    {% endif %}
+
+                {% else %}
+                    <div class="alert alert-info" role="alert">{{ list1[0] }}</div>
+                {% endif %} 
             {% endfor %}
         {% endif %}
         {% endwith %}
@@ -53,4 +64,18 @@
     {{ super() }}
     {{ moment.include_moment() }}
     {{ moment.lang(g.locale) }}
+    <script>
+        function translate(sourceElem, destElem, sourceLang, destLang) {
+            $(destElem).html('<img src="{{ url_for('static', filename='loading.gif') }}">');
+            $.post('/translate', {
+                text: $(sourceElem).text(),
+                source_language: sourceLang,
+                dest_language: destLang
+            }).done(function(response) {
+                $(destElem).text(response['text'])
+            }).fail(function() {
+                $(destElem).text("{{ _('Error: Could not contact server.') }}");
+            });
+        }
+    </script>
 {% endblock %}
